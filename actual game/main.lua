@@ -4,7 +4,22 @@ love.graphics.setBackgroundColor(r, g, b)
 local timer = 0 
 local int = math.ceil(timer)
 
+collider = require 'libs/collider'
+
+
 function love.load()
+    local dbgcol = {1,1,1}
+    -- THE RIGHT ONE WILL
+
+
+
+    -- collision thing
+    wall = {x = 100, y = 100, width = 50, height = 50}
+    wall.sprite = love.graphics.newImage('sprites/white.png')
+    -- If you installed transform.lua
+    local transform = require 'libs/transform'
+
+
     anim8 = require 'libs/anim8'
     love.graphics.setDefaultFilter("nearest", "nearest")
     checker = 0 
@@ -19,6 +34,9 @@ function love.load()
     agent.animations = {}
     agent.animations.right = anim8.newAnimation( agent.grid('1-3', 1),0.15)
     agent.animations.left = anim8.newAnimation( agent.grid('1-3', 2),0.15)
+    agent.jumped = love.graphics.newImage('sprites/agent_jump.png')
+    agent.width = 64
+    agent.height = 64
 
     agent.anim = agent.animations.right
 
@@ -27,6 +45,10 @@ function love.load()
 end
 
 function love.update(dt)
+
+    collider.update()
+
+    t = 0 -- counter thing
     timer = timer + dt
     local distance
     local isMoving = false
@@ -85,9 +107,15 @@ function love.update(dt)
         agent.vy = 0
     end
 
-
+    if checkCollision(agent, wall) then
+        t = 0 + 1 
+    end
+    -- collision checker thingy
 
 end
+
+
+
 
 
 
@@ -97,11 +125,15 @@ function love.draw()
     love.graphics.print(agent.x, 10, 210)
     love.graphics.print(int, 350, 0)
     agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
+    love.graphics.rectangle("fill", wall.x, wall.y, wall.width, wall.height)
+    love.graphics.print(t)
+
 
     if isMouseDown then
         drawDottedArc(agent.x, agent.y, mouseX, mouseY)
+        love.graphics.draw(agent.jumped, agent.x, agent.y, nil, 1)
     end
-
+    collider.draw()
 end
 
 function drawDottedArc(x1, y1, x2, y2)
@@ -115,3 +147,13 @@ function drawDottedArc(x1, y1, x2, y2)
         love.graphics.circle("fill", cx, cy, 2)
     end
 end
+
+
+-- thanks google
+function checkCollision(obj1, obj2)
+    return obj1.x < obj2.x + obj2.width and
+           obj1.x + obj1.width > obj2.x and
+           obj1.y < obj2.y + obj2.height and
+           obj1.y + obj1.height > obj2.y
+end
+-- THE ACTUAL THING!!!
