@@ -4,12 +4,14 @@ love.graphics.setBackgroundColor(r, g, b)
 local timer = 0 
 local int = math.ceil(timer)
 
+
 collider = require 'libs/collider'
 
 
 function love.load()
     local dbgcol = {1,1,1}
     -- THE RIGHT ONE WILL
+    -- It's on github
 
 
 
@@ -42,11 +44,72 @@ function love.load()
 
     isMouseDown = false
     mouseX, mouseY = 0, 0
+
+    gun = {}
+    gun.x = agent.x + 5
+    gun.y = agent.y - 5
+
+    bullet = {}
+
+    spawnBullets(0, 0, 500, 0, 100, 0, 2)
+
 end
+
+function spawnBullets(x, y, vx, vy, ax, ay, r)
+    table.insert(bullet, {
+        x = x,
+        y = y,
+        vx = vx,
+        vy = vy,
+        ax = ax,
+        ay = ay,
+        r = r
+    })
+end
+
+
+
+function drawBullets()
+    for _, bullet in ipairs(bullet) do
+        love.graphics.setColor(255, 174, 66)
+        love.graphics.circle("fill", bullet.x, bullet.y, bullet.r)
+    end
+end
+
+
+function updateBullets(dt)
+    for _, bullet in ipairs(bullet) do
+
+        bullet.vx = bullet.vx + bullet.ax * dt
+        bullet.vy = bullet.vy + bullet.ay * dt
+
+
+        bullet.x = bullet.x + bullet.vx * dt
+        bullet.y = bullet.y + bullet.vy * dt
+    end
+end
+
+
 
 function love.update(dt)
 
+    updateBullets(dt)
+
+    agent.y = agent.y + 0 --this is gravity here at play trust
+    gun.y = agent.y + 30
+
     collider.update()
+
+
+
+    if agent.anim == agent.animations.right then -- making the gun work
+        gun.x = agent.x + 60
+    end
+
+    if agent.anim == agent.animations.left then -- also making the gun work
+        gun.x = agent.x - -5
+    end
+
 
     t = 0 -- counter thing
     timer = timer + dt
@@ -56,12 +119,14 @@ function love.update(dt)
         agent.anim = agent.animations.right
         agent.x = agent.x + 2
         isMoving = true
+        gun.x = agent.x + 60 --make the gun face right
     end
 
     if love.keyboard.isDown("left") then
         isMoving = true
         agent.x = agent.x - 2
         agent.anim = agent.animations.left
+        gun.x = agent.x - -5 --make the gun face left I guess
     end
 
     agent.anim:update(dt)
@@ -112,7 +177,22 @@ function love.update(dt)
     end
     -- collision checker thingy
 
+    -- pain, suffering and bullets
+
+
+    if love.mouse.isDown(2) then
+        if agent.anim == agent.animations.right then
+            spawnBullets(gun.x, gun.y, 500, 0, 0, 0, 2)
+        elseif agent.anim == agent.animations.left then
+            spawnBullets(gun.x, gun.y, -500, 0, 0, 0, 2)
+        end           
+    end
+
+-- I swear, these monkey wrenched solutions will stop working at some point, but for now we shall enjoy
+
+
 end
+
 
 
 
@@ -127,6 +207,12 @@ function love.draw()
     agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
     love.graphics.rectangle("fill", wall.x, wall.y, wall.width, wall.height)
     love.graphics.print(t)
+    love.graphics.circle("fill", gun.x, gun.y, 2)
+    love.graphics.print(gun.x, 10, 250)
+    love.graphics.print(gun.y, 10, 260)
+
+    love.graphics.setColor(255, 174, 66)
+    drawBullets()
 
 
     if isMouseDown then
