@@ -14,7 +14,6 @@ function love.load()
     -- It's on github
 
 
-
     -- collision thing
     wall = {x = 100, y = 100, width = 50, height = 50}
     wall.sprite = love.graphics.newImage('sprites/white.png')
@@ -37,6 +36,9 @@ function love.load()
     agent.animations.right = anim8.newAnimation( agent.grid('1-3', 1),0.15)
     agent.animations.left = anim8.newAnimation( agent.grid('1-3', 2),0.15)
     agent.jumped = love.graphics.newImage('sprites/agent_jump.png')
+    --agent.nil_grid = love.graphics.newImage('sprites/nul.png')
+    --agent.animations.nul_spritesheet = anim8.newGrid( 64, 64, agent.nil_grid:getWidth(), agent.nil_grid:getHeight() )
+    --agent.animations.nul = anim8.newAnimation(agent.grid('1-3', 2), 0.15)
     agent.width = 64
     agent.height = 64
 
@@ -46,13 +48,13 @@ function love.load()
     mouseX, mouseY = 0, 0
 
     gun = {}
-    gun.x = agent.x + 5
-    gun.y = agent.y - 5
+    --gun.x = agent.x + 5
+    --gun.y = agent.y - 5
 
     bullet = {}
 
     spawnBullets(0, 0, 500, 0, 100, 0, 2)
-
+    bullet_numer = 0
 end
 
 function spawnBullets(x, y, vx, vy, ax, ay, r)
@@ -71,7 +73,8 @@ end
 
 function drawBullets()
     for _, bullet in ipairs(bullet) do
-        love.graphics.setColor(255, 174, 66)
+        --love.graphics.setColor(255, 174, 66)
+        --love.graphics.setColor(1, 0, 0)
         love.graphics.circle("fill", bullet.x, bullet.y, bullet.r)
     end
 end
@@ -92,6 +95,9 @@ end
 
 
 function love.update(dt)
+
+
+
 
     updateBullets(dt)
 
@@ -174,6 +180,7 @@ function love.update(dt)
 
     if checkCollision(agent, wall) then
         t = 0 + 1 
+
     end
     -- collision checker thingy
 
@@ -183,8 +190,10 @@ function love.update(dt)
     if love.mouse.isDown(2) then
         if agent.anim == agent.animations.right then
             spawnBullets(gun.x, gun.y, 500, 0, 0, 0, 2)
+            bullet_numer = bullet_numer + 1
         elseif agent.anim == agent.animations.left then
             spawnBullets(gun.x, gun.y, -500, 0, 0, 0, 2)
+            bullet_numer = bullet_numer + 1
         end           
     end
 
@@ -204,12 +213,13 @@ function love.draw()
     -- In versions prior to 11.0, color component values are (0, 102, 102)
     love.graphics.print(agent.x, 10, 210)
     love.graphics.print(int, 350, 0)
-    agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
+    --agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
     love.graphics.rectangle("fill", wall.x, wall.y, wall.width, wall.height)
     love.graphics.print(t)
     love.graphics.circle("fill", gun.x, gun.y, 2)
     love.graphics.print(gun.x, 10, 250)
     love.graphics.print(gun.y, 10, 260)
+    love.graphics.print(bullet_numer, 20, 300)
 
     love.graphics.setColor(255, 174, 66)
     drawBullets()
@@ -220,6 +230,12 @@ function love.draw()
         love.graphics.draw(agent.jumped, agent.x, agent.y, nil, 1)
     end
     collider.draw()
+
+    if not isMouseDown then
+        agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
+    end
+
+    
 end
 
 function drawDottedArc(x1, y1, x2, y2)
