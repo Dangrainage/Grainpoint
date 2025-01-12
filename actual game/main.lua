@@ -15,8 +15,14 @@ function love.load()
 
 
     -- collision thing
-    wall = {x = 100, y = 100, width = 50, height = 50}
-    wall.sprite = love.graphics.newImage('sprites/white.png')
+    guard = {x = 100, y = 100, width = 64, height = 64}
+    guard.sprite = love.graphics.newImage('sprites/guard.png')
+    guard.dead = false
+    guard.uncons = false
+    guard.ok = true
+    guard.body = love.graphics.newImage('sprites/guard_body.png')
+
+
     -- If you installed transform.lua
     local transform = require 'libs/transform'
 
@@ -41,11 +47,16 @@ function love.load()
     --agent.animations.nul = anim8.newAnimation(agent.grid('1-3', 2), 0.15)
     agent.width = 64
     agent.height = 64
+    agent.jumped_left = love.graphics.newImage('sprites/agent_jump_left.png')
+    agent.pouncing = love.graphics.newImage('sprites/pouncing.png')
+
 
     agent.anim = agent.animations.right
 
     isMouseDown = false
     mouseX, mouseY = 0, 0
+    disableShooting = false
+    --pouncing = false 
 
     gun = {}
     --gun.x = agent.x + 5
@@ -144,22 +155,25 @@ function love.update(dt)
 
     agent.x = agent.x + agent.vx * dt
     agent.y = agent.y + agent.vy * dt
+    --if pouncing == false then
+        if love.mouse.isDown(1) then
+            isMouseDown = true
+            mouseX, mouseY = love.mouse.getPosition()
+            disableShooting = true
+        else
 
-    if love.mouse.isDown(1) then
-        isMouseDown = true
-        mouseX, mouseY = love.mouse.getPosition()
-    else
-
-        if isMouseDown then
-            local dx = mouseX - agent.x
-            local dy = mouseY - agent.y
-            local distance = math.sqrt(dx * dx + dy * dy)
+            if isMouseDown then
+                local dx = mouseX - agent.x
+                local dy = mouseY - agent.y
+                local distance = math.sqrt(dx * dx + dy * dy)
             
-            agent.vx = (dx / distance) * agent.speed
-            agent.vy = (dy / distance) * agent.speed
-        end
-        isMouseDown = false
-    end
+                agent.vx = (dx / distance) * agent.speed
+                agent.vy = (dy / distance) * agent.speed
+            end
+            isMouseDown = false
+            disableShooting = false
+    --end
+end
 
 
     local damping = 0.98 
@@ -178,31 +192,38 @@ function love.update(dt)
         agent.vy = 0
     end
 
-    if checkCollision(agent, wall) then
-        t = 0 + 1 
+    --if checkCollision(agent, guard) then
+        --t = 0 + 1 
+        --pouncing = true
+        --if pouncing == true then
+            --love.graphics.print("You're poucing, up to kill, down to knock out", 280, 10)
+        --end
 
-    end
+    --end
     -- collision checker thingy
 
     -- pain, suffering and bullets
 
 
     if love.mouse.isDown(2) then
-        if agent.anim == agent.animations.right then
-            spawnBullets(gun.x, gun.y, 500, 0, 0, 0, 2)
-            bullet_numer = bullet_numer + 1
-        elseif agent.anim == agent.animations.left then
-            spawnBullets(gun.x, gun.y, -500, 0, 0, 0, 2)
-            bullet_numer = bullet_numer + 1
-        end           
+        --if pouncing == false then 
+            if disableShooting == false then
+                 if agent.anim == agent.animations.right then
+                    spawnBullets(gun.x, gun.y, 500, 0, 0, 0, 2)
+                    bullet_numer = bullet_numer + 1
+                elseif agent.anim == agent.animations.left then
+                    spawnBullets(gun.x, gun.y, -500, 0, 0, 0, 2)
+                    bullet_numer = bullet_numer + 1
+                end
+        --end           
     end
+end
+
 
 -- I swear, these monkey wrenched solutions will stop working at some point, but for now we shall enjoy
 
 
 end
-
-
 
 
 
@@ -214,7 +235,7 @@ function love.draw()
     love.graphics.print(agent.x, 10, 210)
     love.graphics.print(int, 350, 0)
     --agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
-    love.graphics.rectangle("fill", wall.x, wall.y, wall.width, wall.height)
+    --love.graphics.rectangle("fill", guard.x, guard.y, guard.width, guard.height)
     love.graphics.print(t)
     love.graphics.circle("fill", gun.x, gun.y, 2)
     love.graphics.print(gun.x, 10, 250)
@@ -223,20 +244,57 @@ function love.draw()
 
     love.graphics.setColor(255, 174, 66)
     drawBullets()
-
-
-    if isMouseDown then
-        drawDottedArc(agent.x, agent.y, mouseX, mouseY)
-        love.graphics.draw(agent.jumped, agent.x, agent.y, nil, 1)
-    end
     collider.draw()
-
-    if not isMouseDown then
-        agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
-    end
-
     
-end
+    
+
+    --if pouncing == false then
+
+            if isMouseDown then
+                drawDottedArc(agent.x, agent.y, mouseX, mouseY)
+                if mouseX > agent.x + 2 then
+                    love.graphics.draw(agent.jumped, agent.x, agent.y, nil, 1)
+                elseif mouseX < agent.x - 2 then
+                    love.graphics.draw(agent.jumped_left, agent.x, agent.y, nil, 1)
+                end
+            end
+       -- if guard.ok == true then
+            love.graphics.draw(guard.sprite, guard.x, guard.y, nil, 1 )
+       -- elseif guard.dead or guard.uncons then
+         --   love.graphics.draw(guard.body, guard.x, guard.y, nil, 1)
+        --end
+
+
+        if not isMouseDown then
+            agent.anim:draw(agent.spriteSheet, agent.x, agent.y, nil, 1)
+        end
+    
+
+    --elseif  pouncing == true and guard.ok == true then
+        --love.graphics.draw(agent.pouncing, agent.x, agent.y, nil, 1)
+        --guard.x, guard.y = agent.x, agent.y
+        --if love.keyboard.isDown("down") then
+            --guard.uncons = true
+            --guard.dead = false
+            --guard.ok = false
+            --love.graphics.print("Non-lethal", 250, 10)
+            --pouncing = false
+            --guard.x, guard.y = guard.x - 20, guard.y
+            --love.graphics.draw(guard.body, guard.x, guard.y, nil, 1)
+            --agent.x = agent.x + 20
+        --elseif love.keyboard.isDown("up") then
+            --guard.dead = true
+            --love.graphics.print("Lethal", 250, 10)
+            --guard.uncons = false
+            --guard.ok = false
+            --pouncing = false
+            --guard.x, guard.y = guard.x - 20, guard.y + 0
+            --endMysuffering()
+            --love.graphics.draw(guard.body, guard.x, guard.y, nil, 1)
+end       
+    --end
+--end
+
 
 function drawDottedArc(x1, y1, x2, y2)
     local numDots = 20 
