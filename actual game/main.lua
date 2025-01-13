@@ -1,4 +1,31 @@
 -- Load some default values for our agent.
+
+
+-- Reminder:
+
+-- Add a non gun animation to the agent
+
+-- Add intimidation value, and intimidation range (hopefully upgradable)
+
+-- Add sprinting? Or just slow player down on pulling the gun out?
+
+-- Add pouncing (or at least fix It)
+
+-- Add/Fix Collisions 
+
+-- Fix the fucking gun
+
+-- Seek professional mental help (I'm In pain)
+
+
+
+
+
+
+
+
+
+
 local r, g, b = love.math.colorFromBytes(132, 193, 238)
 love.graphics.setBackgroundColor(r, g, b)
 local timer = 0 
@@ -12,7 +39,7 @@ function love.load()
     local dbgcol = {1,1,1}
     -- THE RIGHT ONE WILL
     -- It's on github
-
+    vr = 0
 
     -- collision thing
     guard = {x = 100, y = 100, width = 64, height = 64}
@@ -56,7 +83,7 @@ function love.load()
     isMouseDown = false
     mouseX, mouseY = 0, 0
     disableShooting = false
-    --pouncing = false 
+   -- pouncing = false 
 
     gun = {}
     --gun.x = agent.x + 5
@@ -65,7 +92,7 @@ function love.load()
     bullet = {}
 
     spawnBullets(0, 0, 500, 0, 100, 0, 2)
-    bullet_numer = 0
+    bullet_numer = 6
 end
 
 function spawnBullets(x, y, vx, vy, ax, ay, r)
@@ -105,10 +132,9 @@ end
 
 
 
+
+
 function love.update(dt)
-
-
-
 
     updateBullets(dt)
 
@@ -116,6 +142,7 @@ function love.update(dt)
     gun.y = agent.y + 30
 
     collider.update()
+
 
 
 
@@ -192,41 +219,47 @@ end
         agent.vy = 0
     end
 
-    --if checkCollision(agent, guard) then
-        --t = 0 + 1 
+    if checkCollision(agent, guard) then
+        t = 0 + 1 
         --pouncing = true
         --if pouncing == true then
             --love.graphics.print("You're poucing, up to kill, down to knock out", 280, 10)
         --end
 
-    --end
+    end
     -- collision checker thingy
 
     -- pain, suffering and bullets
 
+    magazine()
 
-    if love.mouse.isDown(2) then
+
+    if love.mouse.isDown(2) and not disableShooting then
         --if pouncing == false then 
-            if disableShooting == false then
-                 if agent.anim == agent.animations.right then
-                    spawnBullets(gun.x, gun.y, 500, 0, 0, 0, 2)
-                    bullet_numer = bullet_numer + 1
-                elseif agent.anim == agent.animations.left then
-                    spawnBullets(gun.x, gun.y, -500, 0, 0, 0, 2)
-                    bullet_numer = bullet_numer + 1
-                end
-        --end           
-    end
+            if agent.anim == agent.animations.right then
+                spawnBullets(gun.x, gun.y, 500, 0, 0, 0, 2)
+                bullet_numer = bullet_numer - 1
+            elseif agent.anim == agent.animations.left then
+                spawnBullets(gun.x, gun.y, -500, 0, 0, 0, 2)
+                bullet_numer = bullet_numer - 1
+            end
+                   
+    --end
 end
 
 
 -- I swear, these monkey wrenched solutions will stop working at some point, but for now we shall enjoy
 
+    
 
 end
 
 
-
+function magazine()
+    if bullet_numer <= 0 then
+        disableShooting = true
+    end    
+end
 
 
 -- Draw a coloured rectangle.
@@ -242,6 +275,7 @@ function love.draw()
     love.graphics.print(gun.y, 10, 260)
     love.graphics.print(bullet_numer, 20, 300)
 
+
     love.graphics.setColor(255, 174, 66)
     drawBullets()
     collider.draw()
@@ -254,8 +288,10 @@ function love.draw()
                 drawDottedArc(agent.x, agent.y, mouseX, mouseY)
                 if mouseX > agent.x + 2 then
                     love.graphics.draw(agent.jumped, agent.x, agent.y, nil, 1)
+                    agent.anim = agent.animations.right
                 elseif mouseX < agent.x - 2 then
                     love.graphics.draw(agent.jumped_left, agent.x, agent.y, nil, 1)
+                    agent.anim = agent.animations.left
                 end
             end
        -- if guard.ok == true then
