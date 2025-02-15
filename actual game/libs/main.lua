@@ -248,7 +248,7 @@ end
     -- pain, suffering and bullets
 
     if checkCollision(agent, wall) then
-        touch(agent, wall)
+        
     end
 
 
@@ -268,11 +268,6 @@ end
             end
                    
     --end
-
-
-
-
-
 end
 
 
@@ -358,24 +353,5 @@ end
 -- THE ACTUAL THING!!!
 
 
-function touch(obj1, obj2)
-    local overlapX = math.min(obj1.x + obj1.width, obj2.x + obj2.width) - math.max(obj1.x, obj2.x)
-    local overlapY = math.min(obj1.y + obj1.height, obj2.y + obj2.height) - math.max(obj1.y, obj2.y)
 
-    if overlapX < overlapY then
-        if obj1.x < obj2.x then
-            obj1.x = obj2.x - obj1.width
-        else
-            obj1.x = obj2.x + obj2.width
-        end
-        obj1.vx = 0
-    else
-        if obj1.y < obj2.y then
-            obj1.y = obj2.y - obj1.height
-        else
-            obj1.y = obj2.y + obj2.height
-        end
-        obj1.vy = 0
-    end
-end
 
